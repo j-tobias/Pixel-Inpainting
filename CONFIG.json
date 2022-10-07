@@ -1,0 +1,17 @@
+{
+    "dataset_path": "resources/Dataset",
+    "pickle_dataset_path": "resources/Pickle_Dataset",
+    "pickle_or_normal": "pickle",
+    "results_path": "results",
+    "device": "cpu",
+    "batch_size": 1,
+    "learningrate": 1e-3,
+    "weight_decay": 1e-5,
+    "n_updates": 50000,
+    "network_config": {
+      "n_in_channels": 3,
+      "n_hidden_layers": 0,
+      "n_kernels": 32,
+      "kernel_size": 7
+    }
+}
