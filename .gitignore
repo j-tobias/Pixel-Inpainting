@@ -2,5 +2,8 @@ resources/
 test.py
 results/
 main2_adapted_Nadeem.py
-__pychache__
+__pychache__/
 CreatePickleDataset.py
+__pycache__/architecture.cpython-310.pyc
+__pycache__/datasets.cpython-310.pyc
+__pycache__/utils.cpython-310.pyc
