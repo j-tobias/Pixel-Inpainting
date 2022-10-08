@@ -69,6 +69,11 @@ testset = Subset(
     indices=np.arange(int(len(dataset) * (4 / 5)), len(dataset))
 )
 print('4. Datasets set up')
+
+# Store the mean and std to denormalize output.
+mean_, std_ = torch.from_numpy(trainingset.mean), torch.from_numpy(trainingset.std)
+print('5. Stored Mean and STD')
+
 #Create DataLoaders for the Datasets
 trainloader = DataLoader(
     trainingset, 
@@ -88,14 +93,16 @@ testloader = DataLoader(
     shuffle=shuffle, 
     num_workers = 0
 )
-print('5. Loaders set up')
+print('6. Loaders set up')
+
 # Define a tensorboard summary writer that writes to directory "results_path/tensorboard"
 writer = SummaryWriter(log_dir=os.path.join(results_path, "tensorboard"))
-print('6. writer set up')
+print('7. writer set up')
+
 # Create Network
 net = CNN(**network_config)
 net.to(device)
-print('7. Neural Network set up')
+print('8. Neural Network set up')
 # Get adam optimizer
 optimizer = torch.optim.Adam(net.parameters(), lr=learningrate, weight_decay=weight_decay)
 
@@ -124,6 +131,22 @@ while update < n_updates:
             
         # Get outputs of our network
         outputs = net(inputs.float())
+
+        _batch_size = outputs.size()[0]     
+
+        # Stack them on themselves N times, where N is the batch size.
+        _mean = torch.reshape(mean_, (3, 1))
+        _mean = _mean.repeat(_batch_size, 100 * 100)
+        _mean = torch.reshape(_mean, (_batch_size, 3, 100, 100))
+        _mean = _mean.to(device)
+
+        _std = torch.reshape(std_, (3, 1))
+        _std = _std.repeat(_batch_size, 100 * 100)
+        _std = torch.reshape(_std, (_batch_size, 3, 100, 100))
+        _std = _std.to(device)  
+
+        # Denormalize output
+        outputs = utils.denormalize_image(outputs, _mean, _std) 
             
         # Calculate loss, do backward pass and update weights
         loss = utils.mse(outputs, targets.float())
