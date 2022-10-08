@@ -36,7 +36,10 @@ PIXEL-INPAINTING
 |       |       |       containing the collected images (roughly 100)
 |       |       | - 001
 |       |       |       containing the collected images (roughly 100)
-|       |       ...(all together are around 29410 images)
+|       |       .
+                .
+                .
+                (all together are around 29410 images)
 
 
 ### Dependencies
