@@ -2,3 +2,5 @@ resources/
 test.py
 results/
 main2_adapted_Nadeem.py
+__pychache__
+CreatePickleDataset.py
