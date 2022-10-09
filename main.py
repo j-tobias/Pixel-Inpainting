@@ -50,8 +50,16 @@ print('3. Plotting Dir created')
 #create Dataset Instance
 if pickle_or_normal == 'normal':
     dataset = ImageDataset(dataset_path)
+
+    #trainingset = ImageDataset(dataset_path, indicies = [], all = False)
+    #validationset = ImageDataset(dataset_path, indicies = [], all = False)
+    #testset = ImageDataset(dataset_path, indicies = [], all = False)
 else:
     dataset = PickleImageDataset(pickle_dataset_path)
+
+    #trainingset = PickleImageDataset(pickle_dataset_path, indicies = [], all = False)
+    #validationset = PickleImageDataset(pickle_dataset_path, indicies = [], all = False)
+    #testset = PickleImageDataset(pickle_dataset_path, indicies = [], all = False)
 
 # Split dataset into training, validation and test set
 # is already randomized, so we do not necessarily have to shuffle again)
