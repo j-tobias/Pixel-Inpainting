@@ -25,6 +25,10 @@ PIXEL-INPAINTING
 | - working_config.json
 |       An example configuration file. Can also be done via command line arguments to main.py.
 | - resources
+
+
+
+
 |       | - plots
 |       |       Plots of the Performence of the Training Process and the Perfromence of the Model
 |       | - tensorboard

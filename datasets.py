@@ -36,7 +36,7 @@ class ImageDataset(Dataset):
         self.image_paths = sorted(glob.glob(os.path.join(path, "**", "*.jpg"), recursive=True))
         selected_image_paths = []
         if not all_:
-            for i in range(len(self.image_paths))
+            for i in range(len(self.image_paths)):
                 if i in indicies:
                     selected_image_paths.append(self.image_paths[i])
             
@@ -93,7 +93,7 @@ class PickleImageDataset (Dataset):
 
         selected_image_paths = []
         if not all_:
-            for i in range(len(self.image_paths))
+            for i in range(len(self.image_paths)):
                 if i in indicies:
                     selected_image_paths.append(self.image_paths[i])
             
