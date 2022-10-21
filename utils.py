@@ -27,9 +27,15 @@ such as mean, std and normalizing
 """
 class ImageStandardizer:
 
-    def __init__ (self, input_dir: str, pickle: boolean = False):
+    def __init__ (self, input_dir: str, pickle: boolean = False, filepath_list: list = []):
         """
-        Take one keyword argument input_dir (string), which is the path to an input directory. This can be an absolute or relative path. \n
+        Input \n
+        • input_dir: which is the path to an input directory. This can be an absolute or relative path. \n
+        • pickle: states if the input files are .pkl files or .jpg files \n
+        • filepath_list: instead a list to the files can be given \n \n
+
+
+
         • Scan this input directory recursively for files ending in .jpg.\n
         • Raise a ValueError if there are no .jpg files.\n
         • Transform all paths to absolute paths and sort them alphabetically in ascending order.\n
@@ -38,25 +44,33 @@ class ImageStandardizer:
         • Create an attribute self.std with value None.        
         """
 
-        if pickle:
-            #search recursively for image_array.pkl files an
-            jpgs_input_dir = glob.glob(os.path.join(input_dir, '**','image_array.pkl'), recursive=True)
+        if filepath_list == []:
+            if pickle:
+                #search recursively for image_array.pkl files an
+                jpgs_input_dir = glob.glob(os.path.join(input_dir, '**','image_array.pkl'), recursive=True)
+            else:
+                #search recursively for *.jpg files an
+                jpgs_input_dir = glob.glob(os.path.join(input_dir, '**','*.jpg'), recursive=True)
         else:
-            #search recursively for *.jpg files an
-            jpgs_input_dir = glob.glob(os.path.join(input_dir, '**','*.jpg'), recursive=True)
+            self.filepath_list = filepath_list
+            jpgs_input_dir = filepath_list
 
         #check if files were found or not -> if not raise Error
         if jpgs_input_dir == []:
             self.file = []
             raise ValueError("There seem to be no .jpg files in this dir")
         
-        #create the absolute paths
-        abs_path_jpgs = []
-        for jpg_file in jpgs_input_dir:
-            abs_path_jpgs.append(os.path.abspath(jpg_file))
+        if filepath_list == []:
+            #create the absolute paths
+            abs_path_jpgs = []
+            for jpg_file in tqdm(jpgs_input_dir):
+                abs_path_jpgs.append(os.path.abspath(jpg_file))
 
-        #sort the paths alphabetically in ascending order
-        self.files = sorted(abs_path_jpgs)
+            #sort the paths alphabetically in ascending order
+            self.files = sorted(abs_path_jpgs)
+        else:
+            self.files = filepath_list
+
 
         ####just for Testing###
         #for file in self.files:
@@ -108,7 +122,7 @@ class ImageStandardizer:
         self.std = np.zeros(3, dtype=np.float64)
 
         #iterating thourgh all files
-        for image_array_path in self.files:
+        for image_array_path in tqdm(self.files):
 
             #open the current Picklefile to get the data
             with open(image_array_path, 'rb') as f:
@@ -344,7 +358,7 @@ def plot(inputs, targets, predictions, path, update):
 
 #Evaluation
 
-
+"""
 def mse(outputs, targets):
     mse_loss = torch.nn.MSELoss()
 
@@ -373,7 +387,7 @@ def mse(input_images, predictions, n_samples) -> np.ndarray:
         squared_losses.append(error**error)
     #add the losses and devide by n_samples
     loss = sum(squared_losses)/n_samples
-    return loss"""
+    return loss
 
 def evaluate_model(model: torch.nn.Module, dataloader: DataLoader, loss_fn, device: torch.device):
     """Function for evaluation of a model `model` on the data in `dataloader` on device `device`,

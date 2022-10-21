@@ -86,13 +86,14 @@ class PickleImageDataset (Dataset):
 
         if pickle_image_paths == None:
             self.image_paths = sorted(glob.glob(os.path.join(path, "**", "image_array.pkl"), recursive=True))
+            self.analyzer = utils.ImageStandardizer(self.path, pickle = True)
         else:
             self.image_paths = pickle_image_paths
+            self.analyzer = utils.ImageStandardizer(self.path, True, pickle_image_paths)
             
 
             
         #normalize
-        self.analyzer = utils.ImageStandardizer(self.path, pickle = True)
         self.mean, self.std = self.analyzer.analyze_images_pkl()
 
     def __getitem__(self, index: int):

@@ -3,10 +3,11 @@ import os
 import json
 import torch
 import numpy as np
+import pickle as pkl
 from tqdm import tqdm
 from torch.utils.data import Subset
 from torch.utils.data import DataLoader
-from torch.utils.tensorboard import SummaryWriter
+#from torch.utils.tensorboard import SummaryWriter
 #PROJECT IMPORTS
 import utils
 from architecture import CNN
@@ -54,28 +55,29 @@ if pickle_or_normal == 'normal':
     #trainingset = ImageDataset(dataset_path, indicies = [], all = False)
     #validationset = ImageDataset(dataset_path, indicies = [], all = False)
     #testset = ImageDataset(dataset_path, indicies = [], all = False)
+    print('Imagedataset set up')
+    trainingset = Subset(
+        dataset,
+        indices=np.arange(int(len(dataset) * (3 / 5)))
+    )
+    validationset = Subset(
+        dataset,
+        indices=np.arange(int(len(dataset) * (3 / 5)), int(len(dataset) * (4 / 5)))
+    )
+    testset = Subset(
+        dataset,
+        indices=np.arange(int(len(dataset) * (4 / 5)), len(dataset))
+    )
 else:
-    dataset = PickleImageDataset(pickle_dataset_path)
+    with open('resources/Pickle_Image_Paths.pkl', 'rb') as f:
+        pickle_paths = pkl.load(f)
+    print('Imagedataset set up')
 
-    #trainingset = PickleImageDataset(pickle_dataset_path, indicies = [], all = False)
-    #validationset = PickleImageDataset(pickle_dataset_path, indicies = [], all = False)
-    #testset = PickleImageDataset(pickle_dataset_path, indicies = [], all = False)
+    trainingset = PickleImageDataset(pickle_dataset_path, pickle_paths[:17641])
+    validationset = PickleImageDataset(pickle_dataset_path, pickle_paths[17641:23521])
+    testset = PickleImageDataset(pickle_dataset_path, pickle_paths[23521:])
 
-# Split dataset into training, validation and test set
-# is already randomized, so we do not necessarily have to shuffle again)
-print('Imagedataset set up')
-trainingset = Subset(
-    dataset,
-    indices=np.arange(int(len(dataset) * (3 / 5)))
-)
-validationset = Subset(
-    dataset,
-    indices=np.arange(int(len(dataset) * (3 / 5)), int(len(dataset) * (4 / 5)))
-)
-testset = Subset(
-    dataset,
-    indices=np.arange(int(len(dataset) * (4 / 5)), len(dataset))
-)
+
 print('4. Datasets set up')
 
 # Store the mean and std to denormalize output.
@@ -104,8 +106,8 @@ testloader = DataLoader(
 print('6. Loaders set up')
 
 # Define a tensorboard summary writer that writes to directory "results_path/tensorboard"
-writer = SummaryWriter(log_dir=os.path.join(results_path, "tensorboard"))
-print('7. writer set up')
+#writer = SummaryWriter(log_dir=os.path.join(results_path, "tensorboard"))
+#print('7. writer set up')
 
 # Create Network
 net = CNN(**network_config)
@@ -127,7 +129,7 @@ torch.save(net, saved_model_file)
 
 # Train until n_updates updates have been reached
 while update < n_updates:
-    for data in trainloader:
+    for data in tqdm(trainloader):
         # Get next samples
         #input_array, known_array, target_array, image_array, index
         image, ids, inputs, knowns, targets = data
@@ -157,13 +159,13 @@ while update < n_updates:
         outputs = utils.denormalize_image(outputs, _mean, _std) 
             
         # Calculate loss, do backward pass and update weights
-        loss = utils.mse(outputs, targets.float())
+        loss = utils.mse(outputs, targets.float(), _batch_size)
         loss.backward()
         optimizer.step()
             
         # Print current status and score
-        if (update + 1) % print_stats_at == 0:
-            writer.add_scalar(tag="training/loss", scalar_value=loss.cpu(), global_step=update)
+        #if (update + 1) % print_stats_at == 0:
+        #    writer.add_scalar(tag="training/loss", scalar_value=loss.cpu(), global_step=update)
             
         # Plot output
         if (update + 1) % plot_at == 0:
@@ -172,11 +174,11 @@ while update < n_updates:
         # Evaluate model on validation set
         if (update + 1) % validate_at == 0:
             val_loss = utils.evaluate_model(net, dataloader=valloader, loss_fn=utils.mse, device=device)
-            writer.add_scalar(tag="validation/loss", scalar_value=val_loss, global_step=update)
-            # Add weights and gradients as arrays to tensorboard
-            for i, (name, param) in enumerate(net.named_parameters()):
-                writer.add_histogram(tag=f"validation/param_{i} ({name})", values=param.cpu(), global_step=update)
-                writer.add_histogram(tag=f"validation/gradients_{i} ({name})", values=param.grad.cpu(), global_step=update)
+            #writer.add_scalar(tag="validation/loss", scalar_value=val_loss, global_step=update)
+            ## Add weights and gradients as arrays to tensorboard
+            #for i, (name, param) in enumerate(net.named_parameters()):
+            #    writer.add_histogram(tag=f"validation/param_{i} ({name})", values=param.cpu(), global_step=update)
+            #    writer.add_histogram(tag=f"validation/gradients_{i} ({name})", values=param.grad.cpu(), global_step=update)
             # Save best model for early stopping
             if val_loss < best_validation_loss:
                 best_validation_loss = val_loss
@@ -193,7 +195,7 @@ while update < n_updates:
             break
 
     update_progress_bar.close()
-    writer.close()
+    #writer.close()
     print("Finished Training!")
     
     # Load best model and compute score on test set
