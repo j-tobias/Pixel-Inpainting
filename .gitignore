@@ -4,3 +4,5 @@ results/
 main2_adapted_Nadeem.py
 CreatePickleDataset.py
 test.ipynb
+__pycache__
+.ipynb_checkpoints
