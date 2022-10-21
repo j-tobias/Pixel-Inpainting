@@ -17,7 +17,7 @@ The Dataset class needs two functions to work properly
 
 #DATASET CLASS
 class ImageDataset(Dataset):
-    def __init__(self, path, indicies:list = [], all_: bool = True):
+    def __init__(self, path):
         """
         This class loads prepares the Images for Usage in the Network.\n
         • standradices the images\n
@@ -34,13 +34,7 @@ class ImageDataset(Dataset):
         """
         self.path = path
         self.image_paths = sorted(glob.glob(os.path.join(path, "**", "*.jpg"), recursive=True))
-        selected_image_paths = []
-        if not all_:
-            for i in range(len(self.image_paths)):
-                if i in indicies:
-                    selected_image_paths.append(self.image_paths[i])
-            
-            self.image_paths = selected_image_paths
+
 
         #normalize
         self.analyzer = utils.ImageStandardizer(self.path)
@@ -76,7 +70,7 @@ class ImageDataset(Dataset):
         return n_samples
 
 class PickleImageDataset (Dataset):
-    def __init__(self, path, indicies:list = [], all_: bool = True):
+    def __init__(self, path, pickle_image_paths = None):
         """
         This class loads and prepares for Usage in the Network.\n
         
@@ -89,15 +83,13 @@ class PickleImageDataset (Dataset):
 
         """
         self.path = path
-        self.image_paths = sorted(glob.glob(os.path.join(path, "**", "image_array.pkl"), recursive=True))
 
-        selected_image_paths = []
-        if not all_:
-            for i in range(len(self.image_paths)):
-                if i in indicies:
-                    selected_image_paths.append(self.image_paths[i])
+        if pickle_image_paths == None:
+            self.image_paths = sorted(glob.glob(os.path.join(path, "**", "image_array.pkl"), recursive=True))
+        else:
+            self.image_paths = pickle_image_paths
             
-            self.image_paths = selected_image_paths
+
             
         #normalize
         self.analyzer = utils.ImageStandardizer(self.path, pickle = True)

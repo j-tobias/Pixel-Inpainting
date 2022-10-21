@@ -63,7 +63,7 @@ else:
 
 # Split dataset into training, validation and test set
 # is already randomized, so we do not necessarily have to shuffle again)
-
+print('Imagedataset set up')
 trainingset = Subset(
     dataset,
     indices=np.arange(int(len(dataset) * (3 / 5)))
